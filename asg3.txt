@@ -1,0 +1,209 @@
+
+/*   Dr Karam’s code
+struct abs_morse_tree {
+	string encode(string letters) const=0;
+	string decode(string morse) const=0;     };
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <cstring>
+
+#include "morse_tree.h"
+
+using namespace std;
+
+int main ( int argc, char *argv[] )
+{
+ cout << " " << endl;
+
+
+  morse_tree myTree ;
+
+
+      if (argc == 2 )
+      {
+         if (strcmp(argv[0],"-e")==0 )
+          {
+           cout << myTree.encode(argv[1]) << endl;
+          }
+
+         else if (strcmp(argv[0],"-d")==0  )
+          {
+            cout << myTree.decode(argv[1]) << endl;
+          }
+      }
+
+
+cout << " " << endl;
+return 0;
+
+}
+
+
+#ifndef MORSE_TREE_H_
+#define MORSE_TREE_H_
+
+#include <fstream>
+#include <sstream>
+#include <iostream>
+
+using namespace std;
+
+
+   struct morse_tree {
+       string code;
+       string letter;
+      morse_tree* dot;
+      morse_tree* dash;
+
+    //constructor
+   morse_tree();
+
+    morse_tree(const string c, const string l, morse_tree* left = NULL,morse_tree* right = NULL):
+                           code(c), letter(l), dot(left), dash(right) {}
+
+   //destructor
+virtual ~morse_tree() {}
+
+virtual string to_string() const {
+ ostringstream os;
+os << letter ;
+return os.str();
+
+}
+
+string get_root() const ;
+
+
+  void  build_tree();
+  void addToTree(string s);
+  string stringToMorse(string s);
+  string charToMorse(char c, string current)const;
+
+    string encode(const string& letter) ;
+
+	  string decode(const string& morse) const;
+
+    friend ostream& operator << (ostream& out,  string letter )  ;
+
+};
+
+   ostream& operator << (ostream& out,  string& letter ) {
+
+    return out << letter ;
+   }
+
+#endif
+
+
+
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include "morse_tree.h"
+using namespace std;
+
+  morse_tree::morse_tree(){
+
+  morse_tree* root ;
+ root = new morse_tree("_", "_", NULL, NULL);
+ root->build_tree();
+};
+
+   void  morse_tree:: build_tree(){
+    string line;
+    ifstream morse_code_file;
+    morse_code_file.open("morse-code.txt");
+    //cout << "loading data file" << endl;
+    while(!morse_code_file.eof())
+    {
+        //cout << "inside build_tree() while loop" << endl;
+        if(morse_code_file.eof())
+        {
+            break;
+        }
+        else{
+            getline(morse_code_file, line);
+            addToTree(line);
+        }
+    }
+    morse_code_file.close();
+
+}
+
+
+  string morse_tree::get_root() const {
+
+     return morse_tree::code ;
+}
+
+void morse_tree:: addToTree(const string s){
+    string l, c;
+    istringstream line(s);
+    line >> l >> c;
+  string temp_node = get_root();
+    //cout << "trying to insert " << l << " " << c << endl;
+    for(unsigned i = 0; i < c.size(); i++){
+        if(c[i] == '.'){
+            if(temp_node->dot  == NULL)
+                temp_node->dot = new morse_tree(c,l,NULL,NULL);
+            else
+                temp_node = temp_node->dot;
+        }
+        else if(c[i]    == '-'){
+            if(temp_node->dash == NULL)
+                temp_node->dash = new morse_tree(c,l,NULL,NULL);
+            else
+                temp_node = temp_node->dash;
+        }
+    }
+}
+   string morse_tree::encode(){
+    cout << "inside encode " << endl;
+    string temp_string;
+    string encoded_string;
+    cout << "Please enter a message to encode: ";
+    //cin.ignore();
+    getline (cin, temp_string);
+    encoded_string = stringToMorse(temp_string);
+    return encoded_string;
+}
+
+  string  morse_tree::stringToMorse(string s){
+    cout << "inside stringToMorse " << endl;
+    cout << "s is = " << s << endl;
+    string encoded_string;
+    for(unsigned i = 0; i < s.size(); i++){
+        encoded_string += charToMorse(s[i], get_root());
+    }
+    return encoded_string;
+}
+
+ string  morse_tree::charToMorse(char c, morse_tree* current)const{
+    string encoded_char;
+    char l = atoi(current->letter.c_str());
+    cout << "inside charToMorse " << endl;
+    cout << current->code << ", " << current->letter << ", "\
+        << current->dot << ", " << current->dash << endl;
+
+    if(l == c)
+        return current->code;
+    else if(current == NULL)
+        return "";
+    else{
+        if(current->dot != NULL)
+            return charToMorse(c, current->dot);
+        //cout << current->data;
+        if(current->dash != NULL)
+            return charToMorse(c, current->dash);
+    }
+}
+
+//  **	string morse_tree::decode(string morse)  { // from  morse to letter  }
+
+
+
+
+
